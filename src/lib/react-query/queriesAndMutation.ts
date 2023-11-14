@@ -58,16 +58,18 @@ export const useSignOutAccount = () => {
 export const useGetPosts = () => {
     return useInfiniteQuery({
         queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
-        queryFn: getInfinitePosts,
+        queryFn: ({ pageParam }) => getInfinitePosts({ pageParam }), // assuming getInfinitePosts accepts pageParam
         getNextPageParam: (lastPage) => {
-            if (lastPage && lastPage.documents.length === 0) return null;
+            if (!lastPage || lastPage.documents.length === 0) return null;
 
-            const lastId = lastPage?.documents[lastPage?.documents.length - 1].$id;
+            const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
 
-            return lastId;
-        }
-    })
-}
+            // Ensure that lastId is a number
+            return typeof lastId === 'number' ? lastId : null;
+        },
+        initialPageParam: 0 // Set an appropriate initial page parameter
+    });
+};
 
 export const useSearchPosts = (searchTerm: string) => {
     return useQuery({
